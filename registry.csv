@@ -1,6 +1,6 @@
 # schema_version: 1.0.0
 base_item,child_id,namespace,model_path
-golden_pickaxe,1,,
+golden_pickaxe,1,a,b
 golden_pickaxe,2,,
 golden_pickaxe,3,,
 golden_pickaxe,4,,
@@ -32,4 +32,4 @@ diamond_sword,1,,
 diamond_sword,2,,
 diamond_sword,3,,
 diamond_sword,4,,
-diamond_sword,5,,
+diamond_sword,5,b,a

@@ -1,6 +1,6 @@
 """
 generator - Minecraft Custom Model Data Resourcepack Generator
-(仕様書 3 準拠)
+(1.20.x 旧仕様 & 1.21.4+ 新仕様 バージョン別分割出力版)
 """
 
 import argparse
@@ -9,19 +9,18 @@ import json
 import os
 import shutil
 import sys
-import zipfile
 
-RESOURCE_PACK_FORMAT = 15  # Minecraft 1.20 向け (必要に応じて変更可能)
+# pack_format 定義
+PACK_FORMAT_1_20 = 15  # 1.20.1
+PACK_FORMAT_1_21 = 53  # 1.21.4
 
 
 def parse_registry_csv(csv_path):
-    """registry.csv を読み込み、有効なデータ行のみを取り出します。"""
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"CSVファイルが見つかりません: {csv_path}")
 
     items = []
     with open(csv_path, "r", encoding="utf-8") as f:
-        # # コメント行をスキップ
         lines = [line for line in f if not line.strip().startswith("#")]
 
     reader = csv.DictReader(lines)
@@ -31,7 +30,6 @@ def parse_registry_csv(csv_path):
         namespace = row["namespace"].strip()
         model_path = row["model_path"].strip()
 
-        # namespace と model_path が埋まっているデータのみを生成対象とする
         if namespace and model_path:
             items.append({
                 "base_item": base_item,
@@ -43,62 +41,65 @@ def parse_registry_csv(csv_path):
     return items
 
 
-def build_resourcepack(
-    csv_path="registry.csv",
-    assets_dir="assets",
-    output_zip="resourcepack.zip",
-    build_dir="build_pack",
-):
-    """リソースパック構造を構築し、ZIPに圧縮します。"""
-    items = parse_registry_csv(csv_path)
-    if not items:
-        print("⚠️ 有効なモデル指定（namespace / model_path）が存在しません。")
-        return
-
-    # クリーンな作業用ディレクトリを作成
-    if os.path.exists(build_dir):
-        shutil.rmtree(build_dir)
-    os.makedirs(build_dir)
-
-    # 1. pack.mcmeta の生成
-    mcmeta_data = {
-        "pack": {
-            "pack_format": RESOURCE_PACK_FORMAT,
-            "description": "Generated Custom Model Data Pack",
-        }
-    }
-    with open(
-        os.path.join(build_dir, "pack.mcmeta"), "w", encoding="utf-8"
-    ) as f:
-        json.dump(mcmeta_data, f, indent=2)
-
-    # 2. クリエイター領域 (assets/<NS>/) のコピー
-    target_assets_dir = os.path.join(build_dir, "assets")
-    os.makedirs(target_assets_dir, exist_ok=True)
-
+def copy_custom_assets(assets_dir, target_assets_dir):
+    """クリエイター領域 (assets/<NS>/) のコピー"""
     if os.path.exists(assets_dir):
         for ns in os.listdir(assets_dir):
             src_ns_dir = os.path.join(assets_dir, ns)
-            # minecraft フォルダ以外を対象にコピー
             if os.path.isdir(src_ns_dir) and ns != "minecraft":
                 dst_ns_dir = os.path.join(target_assets_dir, ns)
+                if os.path.exists(dst_ns_dir):
+                    shutil.rmtree(dst_ns_dir)
                 shutil.copytree(src_ns_dir, dst_ns_dir)
 
-    # 3. base_item ごとに overrides JSON を自動生成
-    grouped_items = {}
-    for item in items:
-        grouped_items.setdefault(item["base_item"], []).append(item)
 
-    minecraft_item_models_dir = os.path.join(
-        target_assets_dir, "minecraft", "models", "item"
-    )
-    os.makedirs(minecraft_item_models_dir, exist_ok=True)
+def build_1_20_pack(grouped_items, output_dir, assets_dir):
+    """1.20.x 以前向けパッケージ生成 (models/item/<item>.json + overrides)"""
+    pack_dir = os.path.join(output_dir, "1.20")
+    target_assets_dir = os.path.join(pack_dir, "assets")
+
+    # pack.mcmeta
+    os.makedirs(pack_dir, exist_ok=True)
+    with open(
+        os.path.join(pack_dir, "pack.mcmeta"), "w", encoding="utf-8"
+    ) as f:
+        json.dump(
+            {
+                "pack": {
+                    "pack_format": PACK_FORMAT_1_20,
+                    "description": "Resource Pack for 1.20.x",
+                }
+            },
+            f,
+            indent=2,
+        )
+
+    copy_custom_assets(assets_dir, target_assets_dir)
+
+    # models/item/<base_item>.json
+    models_dir = os.path.join(target_assets_dir, "minecraft", "models", "item")
+    os.makedirs(models_dir, exist_ok=True)
 
     for base_item, child_list in grouped_items.items():
-        overrides = []
+        #【ここを追加】そのアイテムに割り当てられている最大個数 (max_count) を自動取得
+        max_count = max(child["child_id"] for child in child_list)
+
+        # 1.20 向け overrides 生成ロジック
+        overrides = [
+            {
+                "predicate": {"damage": 0.0},
+                "model": f"minecraft:item/{base_item}",
+            }
+        ]
         for child in sorted(child_list, key=lambda x: x["child_id"]):
+            # child_id (例: 1, 2...) を最大個数 (例: 28) で割って割合を計算
+            damage_rate = round(child["child_id"] / max_count, 6)
+
             overrides.append({
-                "predicate": {"custom_model_data": child["child_id"]},
+                "predicate": {
+                    "custom_model_data": child["child_id"],
+                    "damage": damage_rate,  # 例: 1/28 = 0.035714
+                },
                 "model": f"{child['namespace']}:{child['model_path']}",
             })
 
@@ -108,28 +109,93 @@ def build_resourcepack(
             "overrides": overrides,
         }
 
-        output_json_path = os.path.join(
-            minecraft_item_models_dir, f"{base_item}.json"
-        )
-        with open(output_json_path, "w", encoding="utf-8") as f:
+        with open(
+            os.path.join(models_dir, f"{base_item}.json"), "w", encoding="utf-8"
+        ) as f:
             json.dump(base_item_json, f, indent=2)
 
-    # 4. ZIP へ圧縮
-    with zipfile.ZipFile(output_zip, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for root, _, files in os.walk(build_dir):
-            for file in files:
-                file_path = os.path.join(root, file)
-                arcname = os.path.relpath(file_path, build_dir)
-                zipf.write(file_path, arcname)
 
-    # 作業用ディレクトリの削除
-    shutil.rmtree(build_dir)
-    print(f"✅ リソースパックの生成が完了しました: {output_zip}")
+def build_1_21_pack(grouped_items, output_dir, assets_dir):
+    """1.21.4+ 向けパッケージ生成 (items/<item>.json + select 構造)"""
+    pack_dir = os.path.join(output_dir, "1.21")
+    target_assets_dir = os.path.join(pack_dir, "assets")
+
+    # pack.mcmeta
+    os.makedirs(pack_dir, exist_ok=True)
+    with open(
+        os.path.join(pack_dir, "pack.mcmeta"), "w", encoding="utf-8"
+    ) as f:
+        json.dump(
+            {
+                "pack": {
+                    "pack_format": PACK_FORMAT_1_21,
+                    "description": "Resource Pack for 1.21.4+",
+                }
+            },
+            f,
+            indent=2,
+        )
+
+    copy_custom_assets(assets_dir, target_assets_dir)
+
+    # items/<base_item>.json
+    items_dir = os.path.join(target_assets_dir, "minecraft", "items")
+    os.makedirs(items_dir, exist_ok=True)
+
+    for base_item, child_list in grouped_items.items():
+        cases = [
+            {
+                "when": child["child_id"],
+                "model": {
+                    "type": "minecraft:model",
+                    "model": f"{child['namespace']}:{child['model_path']}",
+                },
+            }
+            for child in sorted(child_list, key=lambda x: x["child_id"])
+        ]
+
+        base_item_json = {
+            "model": {
+                "type": "minecraft:select",
+                "property": "minecraft:custom_model_data",
+                "cases": cases,
+                "fallback": {
+                    "type": "minecraft:model",
+                    "model": f"minecraft:item/{base_item}",
+                },
+            }
+        }
+
+        with open(
+            os.path.join(items_dir, f"{base_item}.json"), "w", encoding="utf-8"
+        ) as f:
+            json.dump(base_item_json, f, indent=2)
+
+
+def build_resourcepack_dir(
+    csv_path="registry.csv", assets_dir="assets", output_dir="dist"
+):
+    items = parse_registry_csv(csv_path)
+    if not items:
+        print("⚠️ 有効なモデル指定（namespace / model_path）が存在しません。")
+        return
+
+    grouped_items = {}
+    for item in items:
+        grouped_items.setdefault(item["base_item"], []).append(item)
+
+    # 各バージョンのパックをビルド
+    build_1_20_pack(grouped_items, output_dir, assets_dir)
+    build_1_21_pack(grouped_items, output_dir, assets_dir)
+
+    print(f"✅ 生成完了: {output_dir}/")
+    print(f"  ├─ 1.20/  (1.20.x 以前向け)")
+    print(f"  └─ 1.21/  (1.21.4+ 向け)")
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Minecraft Resourcepack Generator"
+        description="Minecraft Resourcepack Generator (Multi-Version Output)"
     )
     parser.add_argument(
         "-c",
@@ -146,14 +212,14 @@ def main():
     parser.add_argument(
         "-o",
         "--output",
-        default="resourcepack.zip",
-        help="出力 ZIP パス (デフォルト: resourcepack.zip)",
+        default="dist",
+        help="出力ディレクトリ (デフォルト: dist)",
     )
 
     args = parser.parse_args()
 
     try:
-        build_resourcepack(args.csv, args.assets, args.output)
+        build_resourcepack_dir(args.csv, args.assets, args.output)
     except Exception as e:
         print(f"❌ エラーが発生しました: {e}", file=sys.stderr)
         sys.exit(1)
@@ -161,4 +227,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
