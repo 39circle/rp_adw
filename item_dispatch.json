@@ -1,0 +1,47 @@
+{
+  "black_concrete": {
+    "property": "minecraft:custom_model_data"
+  },
+  "diamond_pickaxe": {
+    "property": "minecraft:custom_model_data"
+  },
+  "golden_axe": {
+    "property": "minecraft:damage",
+    "normalize": true
+  },
+  "golden_hoe": {
+    "property": "minecraft:damage",
+    "normalize": true
+  },
+  "golden_pickaxe": {
+    "property": "minecraft:damage",
+    "normalize": true
+  },
+  "iron_hoe": {
+    "property": "minecraft:damage",
+    "normalize": true
+  },
+  "iron_pickaxe": {
+    "property": "minecraft:damage",
+    "normalize": true
+  },
+  "iron_trapdoor": {
+    "property": "minecraft:custom_model_data"
+  },
+  "stone_axe": {
+    "property": "minecraft:damage",
+    "normalize": true
+  },
+  "stone_hoe": {
+    "property": "minecraft:damage",
+    "normalize": true
+  },
+  "stone_pickaxe": {
+    "property": "minecraft:damage",
+    "normalize": true
+  },
+  "stone_shovel": {
+    "property": "minecraft:damage",
+    "normalize": true
+  }
+}

@@ -1,0 +1,23 @@
+name: PR 検証
+
+on:
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: registry.csv を検証する
+        run: python scripts/migrater.py validate
+
+      - name: Generator を dry-run する
+        run: python scripts/generator.py --dry-run

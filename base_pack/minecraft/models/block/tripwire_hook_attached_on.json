@@ -1,0 +1,87 @@
+{
+  "credit": "Made with Blockbench",
+  "textures": {
+    "0": "minecraft:item/tkyuu/t502",
+    "particle": "minecraft:item/tkyuu/t502"
+  },
+  "elements": [
+    {
+      "from": [
+        7.5,
+        0,
+        15.9
+      ],
+      "to": [
+        8.5,
+        1,
+        16
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          0.5,
+          -2,
+          14
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            0.25,
+            0.5,
+            1.75,
+            2
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0.25,
+            0.5,
+            1.75,
+            2
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0.25,
+            0.5,
+            1.75,
+            2
+          ],
+          "texture": "#0",
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            0.25,
+            0.5,
+            1.75,
+            2
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0.25,
+            0.5,
+            1.75,
+            2
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0.25,
+            0.5,
+            1.75,
+            2
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

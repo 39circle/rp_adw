@@ -1,0 +1,19 @@
+{
+  "parent": "minecraft:block/iron_trapdoor_bottom",
+  "textures": {"layer0": "minecraft:block/iron_trapdoor"},
+  "overrides": [
+    { "predicate": { "custom_model_data": 100 }, "model": "minecraft:item/door1/psd_frame" },
+    { "predicate": { "custom_model_data": 101 }, "model": "minecraft:item/door1/psd_door_l" },
+    { "predicate": { "custom_model_data": 102 }, "model": "minecraft:item/door1/psd_door_r" },
+    { "predicate": { "custom_model_data": 200 }, "model": "minecraft:item/door2/psd_frame" },
+    { "predicate": { "custom_model_data": 201 }, "model": "minecraft:item/door2/psd_door_l" },
+    { "predicate": { "custom_model_data": 202 }, "model": "minecraft:item/door2/psd_door_r" },
+    { "predicate": { "custom_model_data": 103 }, "model": "minecraft:item/other/fence_a" },
+    { "predicate": { "custom_model_data": 104 }, "model": "minecraft:item/other/psd_door_dummy" },
+    { "predicate": { "custom_model_data": 105 }, "model": "minecraft:item/other/psd_door_dummy" },
+    { "predicate": { "custom_model_data": 106 }, "model": "minecraft:item/door3/psd_frame" },
+    { "predicate": { "custom_model_data": 107 }, "model": "minecraft:item/door3/psd_door_l" },
+    { "predicate": { "custom_model_data": 108 }, "model": "minecraft:item/door3/psd_door_r" },
+    { "predicate": { "custom_model_data": 109 }, "model": "minecraft:item/other/fence_b" }
+  ]
+}

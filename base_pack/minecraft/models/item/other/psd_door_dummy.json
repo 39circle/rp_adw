@@ -1,0 +1,41 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "item/tkyuu/0007",
+		"particle": "item/tkyuu/0007"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 7.5],
+			"to": [16, 15, 8.5],
+			"faces": {
+				"north": {"uv": [5, 4.5, 2, 2.5], "texture": "#0"},
+				"east": {"uv": [5, 4.5, 2, 2.5], "texture": "#0"},
+				"south": {"uv": [2, 2.5, 5, 4.5], "texture": "#0"},
+				"west": {"uv": [5, 4.5, 2, 2.5], "texture": "#0"},
+				"up": {"uv": [2, 4.5, 5, 2.5], "texture": "#0"},
+				"down": {"uv": [2, 4.5, 5, 2.5], "texture": "#0"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"translation": [0, -5.75, 0]
+		},
+		"head": {
+			"rotation": [0, 90, 0],
+			"scale": [1.6, 1.6, 1.6]
+		}
+	},
+	"groups": [
+		0,
+		{
+			"name": "group",
+			"origin": [8, 8, 8],
+			"scope": 0,
+			"color": 0,
+			"children": []
+		}
+	]
+}

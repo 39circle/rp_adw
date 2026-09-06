@@ -1,0 +1,15 @@
+[submodule "modules/rp_posuo"]
+	path = modules/rp_posuo
+	url = git@github.com:39circle/rp_posuo.git
+[submodule "modules/rp_nikki"]
+	path = modules/rp_nikki
+	url = git@github.com:39circle/rp_nikki.git
+[submodule "modules/rp_toasaga"]
+	path = modules/rp_toasaga
+	url = git@github.com:39circle/rp_toasaga.git
+[submodule "modules/rp_fk"]
+	path = modules/rp_fk
+	url = git@github.com:39circle/rp_fk.git
+[submodule "modules/rp_other"]
+	path = modules/rp_other
+	url = git@github.com:39circle/rp_other.git
